@@ -21,7 +21,7 @@
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "tailwindcss": "4.1.8",
-    "shadcn_neutral": "../../packages/shadcn_neutral"
+    "shadcn_neutral": "https://github.com/igara/20250530_sandbox/releases/download/shadcn_neutral%2F20250530.0.1/shadcn_neutral-20250530.0.1.tgz"
   },
   "devDependencies": {
     "@eslint/eslintrc": "3.3.1",

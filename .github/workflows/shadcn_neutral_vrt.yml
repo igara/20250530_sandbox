@@ -14,8 +14,16 @@ on:
 jobs:
   vrt:
     runs-on: ubuntu-latest
+    outputs:
+      before_ref_sanitized: ${{ steps.set-vars.outputs.before_ref_sanitized }}
+      after_ref_sanitized: ${{ steps.set-vars.outputs.after_ref_sanitized }}
 
     steps:
+      - name: Sanitize branch names
+        id: set-vars
+        run: |
+          echo "before_ref_sanitized=$(echo '${{ github.event.inputs.BEFORE_REF }}' | sed 's|/|_|g')" >> $GITHUB_OUTPUT
+          echo "after_ref_sanitized=$(echo '${{ github.event.inputs.AFTER_REF }}' | sed 's|/|_|g')" >> $GITHUB_OUTPUT
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -46,14 +54,12 @@ jobs:
           mkdir vrt_output
           cp -r __screenshots_before__ __screenshots_after__ __screenshots_diff__ vrt_output/ || true
           cp vrt_report.html vrt_output/ || true
-          BEFORE_REF_SANITIZED=$(echo "${{ github.event.inputs.BEFORE_REF }}" | sed 's|/|_|g')
-          AFTER_REF_SANITIZED=$(echo "${{ github.event.inputs.AFTER_REF }}" | sed 's|/|_|g')
-          zip -r "vrt_report-${BEFORE_REF_SANITIZED}-${AFTER_REF_SANITIZED}.zip" vrt_output
+          zip -r "vrt_report-${{ steps.set-vars.outputs.before_ref_sanitized }}-${{ steps.set-vars.outputs.after_ref_sanitized }}.zip" vrt_output
         working-directory: ./packages/shadcn_neutral
       - name: Upload ZIP to GitHub Release (AFTER_REF tag)
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.inputs.AFTER_REF }}
-          files: ./packages/shadcn_neutral/vrt_report-${{ github.event.inputs.BEFORE_REF }}-${{ github.event.inputs.AFTER_REF }}.zip
+          files: ./packages/shadcn_neutral/vrt_report-${{ steps.set-vars.outputs.before_ref_sanitized }}-${{ steps.set-vars.outputs.after_ref_sanitized }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

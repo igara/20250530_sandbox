@@ -1,0 +1,23 @@
+#!/bin/sh
+
+CURRENT_DIR=$(pwd)
+
+if git diff --cached --name-only | grep -q "^packages/shadcn_neutral/"; then
+  echo "Detected changes in packages/shadcn_neutral/, running lint..."
+  cd "$CURRENT_DIR"
+  cd packages/shadcn_neutral
+  npm run lint
+  npm run build
+
+  if ! git diff --quiet || [ -n "$(git ls-files --others --exclude-standard | grep 'packages/shadcn_neutral/dist')" ]; then
+    echo "❌ Build packages/shadcn_neutral/dist"
+    exit 1
+  fi
+fi
+
+if git diff --cached --name-only | grep -q "^examples/nextjs/"; then
+  echo "Detected changes in examples/nextjs/, running lint..."
+  cd "$CURRENT_DIR"
+  cd examples/nextjs
+  npm run lint
+fi

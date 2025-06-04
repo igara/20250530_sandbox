@@ -1,0 +1,15 @@
+{
+  "eslint.enable": true,
+  "javascript.validate.enable": false,
+  "javascript.format.enable": false,
+  "editor.formatOnSave": true,
+  "editor.renderControlCharacters": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "files.insertFinalNewline": true,
+  "files.eol": "\n",
+  "eslint.options": {
+    "overrideConfigFile": "eslint.config.mjs"
+  }
+}

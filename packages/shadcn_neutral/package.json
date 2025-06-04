@@ -1,0 +1,83 @@
+{
+  "name": "shadcn_neutral",
+  "private": true,
+  "version": "20250530_01",
+  "type": "module",
+  "engines": {
+    "node": "22.14.0",
+    "npm": ">=10.9.2"
+  },
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.js"
+    },
+    "./index.css": "./dist/index.css"
+  },
+  "scripts": {
+    "shadcn": "shadcn",
+    "build": "rm -rf dist && tsc -b && vite build",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
+    "test-storybook": "test-storybook --skipTags=\"skip\" --testTimeout=60000",
+    "test-storybook:ci": "TARGET_URL=http://localhost:6007 STORYBOOK_TEST_RUNNER=true concurrently -k -s first -n \"SB,TEST\" -c \"magenta,blue\" \"rm -rf storybook-static && npm run build-storybook --quiet && npx http-server storybook-static --port 6007 --silent\" \"wait-on tcp:6007 && npm run test-storybook\"",
+    "snapshot:before": "rm -rf __screenshots__ __screenshots_before__ ; npm run test-storybook:ci ; mv __screenshots__ __screenshots_before__",
+    "snapshot:after": "rm -rf __screenshots__ __screenshots_after__ ; npm run test-storybook:ci ; mv __screenshots__ __screenshots_after__",
+    "vrt": "reg-cli __screenshots_after__ __screenshots_before__ __screenshots_diff__ -R vrt_report.html -S 4"
+  },
+  "peerDependencies": {
+    "react": "19.1.0",
+    "react-dom": "19.1.0"
+  },
+  "dependencies": {
+    "@radix-ui/react-slot": "^1.2.3",
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
+    "lucide-react": "0.511.0",
+    "shadcn": "2.6.0",
+    "tailwind-merge": "3.3.0",
+    "tailwindcss": "4.0.7"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "3.3.1",
+    "@eslint/js": "9.28.0",
+    "@next/eslint-plugin-next": "15.3.3",
+    "@storybook/addon-a11y": "9.0.4",
+    "@storybook/addon-docs": "9.0.4",
+    "@storybook/addon-onboarding": "9.0.4",
+    "@storybook/addon-vitest": "9.0.4",
+    "@storybook/react-vite": "9.0.4",
+    "@storybook/test-runner": "0.22.0",
+    "@tailwindcss/vite": "4.0.7",
+    "@types/node": "22.15.29",
+    "@types/react": "19.1.2",
+    "@types/react-dom": "19.1.2",
+    "@vitejs/plugin-react": "4.4.1",
+    "@vitest/browser": "3.1.4",
+    "@vitest/coverage-v8": "3.1.4",
+    "autoprefixer": "10.4.21",
+    "concurrently": "9.1.2",
+    "eslint": "9.28.0",
+    "eslint-plugin-better-tailwindcss": "3.0.0",
+    "eslint-plugin-react-hooks": "5.2.0",
+    "eslint-plugin-react-refresh": "0.4.19",
+    "eslint-plugin-storybook": "9.0.4",
+    "globals": "16.0.0",
+    "playwright": "1.52.0",
+    "reg-cli": "0.18.10",
+    "storybook": "9.0.4",
+    "storycap-testrun": "0.0.2",
+    "tw-animate-css": "^1.3.3",
+    "typescript": "5.8.3",
+    "typescript-eslint": "8.33.0",
+    "vite": "6.3.5",
+    "vite-plugin-dts": "4.5.4",
+    "vitest": "3.1.4"
+  }
+}

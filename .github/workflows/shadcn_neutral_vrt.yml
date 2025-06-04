@@ -1,0 +1,59 @@
+name: shadcn_neutral_release_vrt
+on:
+  workflow_dispatch:
+    inputs:
+      BEFORE_REF:
+        description: 'BEFORE_REF'
+        required: true
+        default: 'main'
+      AFTER_REF:
+        description: 'AFTER_REF'
+        required: true
+        default: 'main'
+
+jobs:
+  vrt:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: 'package.json'
+          cache: 'npm'
+        working-directory: ./packages/shadcn_neutral
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
+      - name: VRT
+        run: |
+          sudo apt install fonts-noto git zip
+
+          git checkout ${{ github.event.inputs.BEFORE_REF }}
+          npm ci
+          npm run snapshot:before
+
+          git checkout  ${{ github.event.inputs.AFTER_REF }}
+          rm -rf node_modules storybook-static
+          npm ci
+          npm run snapshot:after
+          npm run vrt
+        continue-on-error: true
+        working-directory: ./packages/shadcn_neutral
+      - name: Create zip archive of VRT results
+        run: |
+          mkdir vrt_output
+          cp -r __screenshots_before__ __screenshots_after__ __screenshots_diff__ vrt_output/ || true
+          cp vrt_report.html vrt_output/ || true
+          zip -r vrt_report-${{ github.event.inputs.BEFORE_REF }}-${{ github.event.inputs.AFTER_REF }}.zip vrt_output
+        working-directory: ./packages/shadcn_neutral
+      - name: Upload ZIP to GitHub Release (AFTER_REF tag)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.AFTER_REF }}
+          files: vrt_report-${{ github.event.inputs.BEFORE_REF }}-${{ github.event.inputs.AFTER_REF }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        working-directory: ./packages/shadcn_neutral

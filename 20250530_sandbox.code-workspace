@@ -1,0 +1,10 @@
+{
+  "folders": [
+    {
+      "path": "packages/shadcn_neutral"
+    },
+    {
+      "path": "examples/nextjs"
+    }
+  ]
+}

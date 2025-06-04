@@ -1,0 +1,9 @@
+{
+  "name": "20250530_sandbox",
+  "scripts": {
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "9.1.7"
+  }
+}

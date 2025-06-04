@@ -20,15 +20,16 @@ jobs:
         with:
           node-version-file: './packages/shadcn_neutral/package.json'
           cache: 'npm'
-      - name: Create zip archive
+      - name: Create archive
         run: |
           cd ./packages/shadcn_neutral
-          zip -r ../../shadcn_neutral.zip .
-          cd -
+          npm pack
+          mkdir -p ../../artifacts
+          mv *.tgz ../../artifacts/
       - name: Upload ZIP to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
-          files: shadcn_neutral.zip
+          files: artifacts/*.tgz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -22,9 +22,8 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version-file: 'package.json'
+          node-version-file: './packages/shadcn_neutral/package.json'
           cache: 'npm'
-        working-directory: ./packages/shadcn_neutral
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps chromium
       - name: VRT
@@ -53,7 +52,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.inputs.AFTER_REF }}
-          files: vrt_report-${{ github.event.inputs.BEFORE_REF }}-${{ github.event.inputs.AFTER_REF }}.zip
+          files: ./packages/shadcn_neutral/vrt_report-${{ github.event.inputs.BEFORE_REF }}-${{ github.event.inputs.AFTER_REF }}.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        working-directory: ./packages/shadcn_neutral

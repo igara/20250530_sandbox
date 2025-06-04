@@ -1,0 +1,32 @@
+name: shadcn_neutral_release
+on:
+  push:
+    tags:
+      - 'shadcn_neutral/*'
+
+permissions:
+  contents: write
+
+jobs:
+  vrt:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: './packages/shadcn_neutral/package.json'
+          cache: 'npm'
+      - name: Create zip archive of VRT results
+        run: |
+          zip -r shadcn_neutral.zip ./packages/shadcn_neutral
+      - name: Upload ZIP to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: shadcn_neutral.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

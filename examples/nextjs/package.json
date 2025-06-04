@@ -1,6 +1,6 @@
 {
   "name": "nextjs",
-  "version": "20250530_01",
+  "version": "20250530.0.1",
   "private": true,
   "engines": {
     "node": "22.14.0",

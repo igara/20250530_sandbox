@@ -16,9 +16,6 @@ export default defineConfig({
     }),
   ],
   resolve: {
-    conditions: [
-      'vite_react_ui_lib/src',
-    ],
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
@@ -27,7 +24,7 @@ export default defineConfig({
     outDir: 'dist',
     lib: {
       entry: 'src/index.tsx',
-      name: 'vite_react_ui_lib',
+      name: 'shadcn_neutral',
       fileName: 'index',
       formats: [
         'es',
@@ -39,14 +36,12 @@ export default defineConfig({
         'react',
         'react/jsx-runtime',
         'react-dom',
-        'tailwindcss',
       ],
       output: {
         globals: {
           react: 'React',
           'react/jsx-runtime': 'react/jsx-runtime',
           'react-dom': 'ReactDOM',
-          tailwindcss: 'tailwindcss',
         },
       },
     },

@@ -20,7 +20,6 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
-    "customConditions": ["vite_react_ui_lib/src"]
   },
   "include": ["vite.config.ts"]
 }

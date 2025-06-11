@@ -4,6 +4,7 @@ import type {
 import path from 'path';
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
   outputFileTracingRoot: path.join(__dirname, '../../'),
 };
 

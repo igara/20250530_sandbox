@@ -66,14 +66,14 @@ steps:
     ]
 
   - name: 'gcr.io/cloud-builders/docker'
-    id: Docker Push
+    id: Docker Push latest
     args: [
       'push',
       '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPOSITORY_NAME/$BRANCH_NAME-$_CONTAINER_NAME:latest'
     ]
 
   - name: 'gcr.io/cloud-builders/docker'
-    id: Docker Push
+    id: Docker Push Commit SHA
     args: [
       'push',
       '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPOSITORY_NAME/$BRANCH_NAME-$_CONTAINER_NAME:$COMMIT_SHA'

@@ -1,24 +1,27 @@
 ARG VERSION=22.14.0
 
-# ビルドステージ
-FROM node:${VERSION}-alpine AS builder
+FROM node:${VERSION}-alpine AS base
+
+FROM base AS setting
+ARG BRANCH_NAME
 WORKDIR /app
-
-# 依存インストール
-COPY package*.json ./
-RUN npm ci
-
-# アプリの全ファイルをコピーしてビルド
 COPY . .
+
+RUN npm ci
 RUN npm run build
 
-# 実行ステージ
-FROM node:${VERSION}-alpine
+FROM base AS runner
 WORKDIR /app
+ENV NODE_ENV=production
 
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/static ./.next/static
+RUN apk update
+RUN apk add --no-cache libc6-compat git
 
-EXPOSE 3000
-CMD ["node", "server.js"]
+# # Don't run production as root
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+USER nextjs
+
+COPY --from=setting /app .
+
+CMD ["npm", "run", "start"]

@@ -1,83 +1,69 @@
 substitutions:
-  _NODE_IMAGE: 'node:22.14.0-alpine'
-  _PROJECT_NAME: '20250530_sandbox_example_nextjs'
+  _PROJECT_NAME: 'sandbox-example-nextjs'
   _REGION: 'asia-northeast1'
-  _REPOSITORY_NAME: '20250530_sandbox_example_nextjs'  # ← Artifact Registry のリポジトリ名
-  _CONTAINER_NAME: '20250530_sandbox_example_nextjs'
+  _REPOSITORY_NAME: 'sandbox-example-nextjs'  # ← Artifact Registry のリポジトリ名
+  _CONTAINER_NAME: 'sandbox-example-nextjs'
+  _BRANCH_NAME: $BRANCH_NAME
+  _COMMIT_SHA: $COMMIT_SHA
 
 steps:
-  - name: '$_NODE_IMAGE'
-    id: Install dependencies
-    entrypoint: sh
-    dir: '.'
+  - name: gcr.io/cloud-builders/gsutil
+    id: 'download-next-cache'
+    entrypoint: bash
     args:
       - '-c'
       - |
-        if [ -d ".cache/node_modules" ]; then
-          echo "Restoring node_modules from cache..."
-          cp -r .cache/node_modules ./node_modules
-        fi
-
-        echo "Installing dependencies..."
-        npm ci
-
-        echo "Saving node_modules to cache..."
-        mkdir -p .cache
-        cp -r node_modules .cache/node_modules
-
-    volumes:
-      - name: npm-cache
-        path: /workspace/.cache
-
-  - name: '$_NODE_IMAGE'
-    id: Build with Next.js
-    dir: '.'
-    entrypoint: sh
+        gsutil cp gs://${_PROJECT_NAME}/${_BRANCH_NAME}/next_cache.tar.gz next_cache.tar.gz || echo "No cache found, skipping..."
+  - name: bash
+    id: 'extract-next-cache'
+    entrypoint: bash
     args:
       - '-c'
       - |
-        echo "Restoring .next/cache if available..."
-        if [ -d ".next-cache" ]; then
-          mkdir -p .next/cache
-          cp -r .next-cache/* .next/cache/ || true
+        if [ -f next_cache.tar.gz ]; then
+          echo "Extracting next_cache.tar.gz..."
+          tar xzf next_cache.tar.gz
+        else
+          echo "No cache archive to extract"
         fi
 
-        npm run build
+  - name: 'gcr.io/cloud-builders/docker'
+    id: 'build'
+    entrypoint: 'bash'
+    args: 
+      - '-c'
+      - |
+        set -e
+        docker build \
+          -t $_REGION-docker.pkg.dev/$PROJECT_ID/$_REPOSITORY_NAME/$_BRANCH_NAME-$_CONTAINER_NAME:$_COMMIT_SHA \
+          -t $_REGION-docker.pkg.dev/$PROJECT_ID/$_REPOSITORY_NAME/$_BRANCH_NAME-$_CONTAINER_NAME:latest \
+          -t sandbox-example-nextjs \
+          -f Dockerfile \
+          --build-arg BRANCH_NAME=$BRANCH_NAME \
+          .
+        docker run --name sandbox-example-nextjs -d sandbox-example-nextjs
 
-        echo "Caching .next/cache..."
-        if [ -d .next/cache ]; then
-          cp -r .next/cache .next-cache
-        fi
-
-    volumes:
-      - name: next-cache
-        path: /workspace/.next-cache
-    env:
-      - NODE_ENV=production
+        mkdir -p .next
+        docker cp sandbox-example-nextjs:/app/.next/cache .next/cache
 
   - name: 'gcr.io/cloud-builders/docker'
-    id: Build and Push Image
-    dir: '.'
-    args: [
-      'build',
-      '-t', '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPOSITORY_NAME/$BRANCH_NAME-$_CONTAINER_NAME:latest',
-      '-t', '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPOSITORY_NAME/$BRANCH_NAME-$_CONTAINER_NAME:$COMMIT_SHA',
-      '.'
-    ]
-
-  - name: 'gcr.io/cloud-builders/docker'
-    id: Docker Push latest
     args: [
       'push',
-      '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPOSITORY_NAME/$BRANCH_NAME-$_CONTAINER_NAME:latest'
+      '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPOSITORY_NAME/$_BRANCH_NAME-$_CONTAINER_NAME:latest'
     ]
 
   - name: 'gcr.io/cloud-builders/docker'
-    id: Docker Push Commit SHA
     args: [
       'push',
-      '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPOSITORY_NAME/$BRANCH_NAME-$_CONTAINER_NAME:$COMMIT_SHA'
+      '$_REGION-docker.pkg.dev/$PROJECT_ID/$_REPOSITORY_NAME/$_BRANCH_NAME-$_CONTAINER_NAME:$_COMMIT_SHA'
     ]
+
+  - name: bash
+    id: 'archive next_cache'
+    args: ['tar', 'czf', 'next_cache.tar.gz', '.next/cache']
+  # upload
+  - name: gcr.io/cloud-builders/gsutil
+    args: ['cp', 'next_cache.tar.gz', 'gs://${_PROJECT_NAME}/${_BRANCH_NAME}/next_cache.tar.gz']
 
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     id: Deploy to Cloud Run
@@ -85,26 +71,16 @@ steps:
     args:
       - '-c'
       - |
-        echo "Branch: $BRANCH_NAME"
+        echo "Branch: $_BRANCH_NAME"
 
-        if [[ "$BRANCH_NAME" =~ ^(launch|launch2|dev01|dev02|demo|stress)$ ]]; then
+        if [[ "$_BRANCH_NAME" =~ ^(launch|launch2|dev01|dev02|demo|stress)$ ]]; then
           gcloud run deploy $_CONTAINER_NAME \
-            --image $_REGION-docker.pkg.dev/$PROJECT_ID/$_REPOSITORY_NAME/$BRANCH_NAME-$_CONTAINER_NAME:latest \
+            --image $_REGION-docker.pkg.dev/$PROJECT_ID/$_REPOSITORY_NAME/$_BRANCH_NAME-$_CONTAINER_NAME:latest \
             --region $_REGION \
             --platform managed \
             --allow-unauthenticated \
             --port 3000 \
             --update-secrets=NEXTAUTH_SECRET=NEXTAUTH_SECRET:latest
         else
-          echo "Skipping deployment for branch: $BRANCH_NAME"
+          echo "Skipping deployment for branch: $_BRANCH_NAME"
         fi
-
-images:
-  - 'gcr.io/$PROJECT_ID/$_PROJECT_NAME'
-
-options:
-  volumes:
-    - name: npm-cache
-      path: /workspace/.cache
-    - name: next-cache
-      path: /workspace/.next-cache

@@ -15,6 +15,19 @@ if git diff --cached --name-only | grep -q "^packages/shadcn_neutral/"; then
   fi
 fi
 
+if git diff --cached --name-only | grep -q "^examples/spa-react/"; then
+  echo "Detected changes in examples/spa-react/, running lint..."
+  cd "$CURRENT_DIR"
+  cd examples/spa-react
+  npm run lint
+  npm run build
+
+  if ! git diff --quiet || [ -n "$(git ls-files --others --exclude-standard | grep 'examples/spa-react/dist')" ]; then
+    echo "❌ Build examples/spa-react/dist"
+    exit 1
+  fi
+fi
+
 if git diff --cached --name-only | grep -q "^examples/nextjs/"; then
   echo "Detected changes in examples/nextjs/, running lint..."
   cd "$CURRENT_DIR"

@@ -1,0 +1,18 @@
+substitutions:
+  _PROJECT_NAME: "sandbox-example-spa-vite-react"
+  _BRANCH_NAME: $BRANCH_NAME
+
+steps:
+  - name: gcr.io/cloud-builders/gsutil
+    args:
+      - "-c"
+      - |
+        echo "Branch: $_BRANCH_NAME"
+
+        if [[ "$_BRANCH_NAME" =~ ^(launch|launch2|dev01|dev02|demo|stress)$ ]]; then
+          gsutil -m rm -r gs://${_PROJECT_NAME}-${_BRANCH_NAME}/*
+          gsutil -m cp -r dist/* gs://${_PROJECT_NAME}-${_BRANCH_NAME}
+        else
+          echo "Skipping deployment for branch: $_BRANCH_NAME"
+        fi
+    entrypoint: "bash"

@@ -20,4 +20,17 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  build: {
+    rollupOptions: {
+      // https://vitejs.dev/config/build-options.html#build-rollupoptions
+      output: {
+        // https://rollupjs.org/configuration-options/#output-assetfilenames
+        assetFileNames: 'assets/[name][extname]',
+        // https://rollupjs.org/configuration-options/#output-chunkfilenames
+        chunkFileNames: 'assets/chunk.js',
+        // https://rollupjs.org/configuration-options/#output-entryfilenames
+        entryFileNames: 'assets/[name].js',
+      },
+    },
+  },
 });

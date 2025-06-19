@@ -1,0 +1,35 @@
+name: shadcn_green_release
+on:
+  push:
+    tags:
+      - 'shadcn_green/*'
+
+permissions:
+  contents: write
+
+jobs:
+  libv_zip:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: './packages/shadcn_green/package.json'
+          cache: 'npm'
+      - name: Create archive
+        run: |
+          cd ./packages/shadcn_green
+          npm pack
+          mkdir -p ../../artifacts
+          mv *.tgz ../../artifacts/
+      - name: Upload ZIP to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: artifacts/*.tgz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

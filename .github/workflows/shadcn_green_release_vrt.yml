@@ -1,0 +1,68 @@
+name: shadcn_green_release_vrt
+on:
+  workflow_dispatch:
+    inputs:
+      BEFORE_REF:
+        description: 'BEFORE_REF'
+        required: true
+        default: 'main'
+      AFTER_REF:
+        description: 'AFTER_REF'
+        required: true
+        default: 'main'
+
+permissions:
+  contents: write
+
+jobs:
+  vrt:
+    runs-on: ubuntu-latest
+    outputs:
+      before_ref_sanitized: ${{ steps.set-vars.outputs.before_ref_sanitized }}
+      after_ref_sanitized: ${{ steps.set-vars.outputs.after_ref_sanitized }}
+
+    steps:
+      - name: Sanitize branch names
+        id: set-vars
+        run: |
+          echo "before_ref_sanitized=$(echo '${{ github.event.inputs.BEFORE_REF }}' | sed 's|/|_|g')" >> $GITHUB_OUTPUT
+          echo "after_ref_sanitized=$(echo '${{ github.event.inputs.AFTER_REF }}' | sed 's|/|_|g')" >> $GITHUB_OUTPUT
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: './packages/shadcn_green/package.json'
+          cache: 'npm'
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium
+      - name: VRT
+        run: |
+          sudo apt install fonts-noto git zip
+
+          git checkout ${{ github.event.inputs.BEFORE_REF }}
+          npm ci
+          npm run snapshot:before
+
+          git checkout  ${{ github.event.inputs.AFTER_REF }}
+          rm -rf node_modules storybook-static
+          npm ci
+          npm run snapshot:after
+          npm run vrt
+        continue-on-error: true
+        working-directory: ./packages/shadcn_green
+      - name: Create zip archive of VRT results
+        run: |
+          mkdir vrt_output
+          cp -r __screenshots_before__ __screenshots_after__ __screenshots_diff__ vrt_output/ || true
+          cp vrt_report.html vrt_output/ || true
+          zip -r "vrt_report-${{ steps.set-vars.outputs.before_ref_sanitized }}-${{ steps.set-vars.outputs.after_ref_sanitized }}.zip" vrt_output
+        working-directory: ./packages/shadcn_green
+      - name: Upload ZIP to GitHub Release (AFTER_REF tag)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.AFTER_REF }}
+          files: ./packages/shadcn_green/vrt_report-${{ steps.set-vars.outputs.before_ref_sanitized }}-${{ steps.set-vars.outputs.after_ref_sanitized }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -37,7 +37,7 @@ jobs:
           cache: 'npm'
       - name: Install Playwright Browsers
         run: |
-          npx playwright install --with-deps chromium
+          npx playwright install --with-deps
           npm install -g playwright
       - name: VRT
         run: |

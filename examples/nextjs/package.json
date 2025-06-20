@@ -13,15 +13,18 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "lint:fix": "next lint --fix"
   },
   "dependencies": {
     "clsx": "2.1.1",
+    "motion": "12.18.1",
+    "motion-plus": "1.2.1",
     "next": "15.3.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "tailwindcss": "4.1.8",
-    "shadcn_neutral": "https://github.com/igara/20250530_sandbox/releases/download/shadcn_neutral%2F20250530.0.1/shadcn_neutral-20250530.0.1.tgz"
+    "shadcn_neutral": "https://github.com/igara/20250530_sandbox/releases/download/shadcn_neutral%2F20250530.0.1/shadcn_neutral-20250530.0.1.tgz",
+    "tailwindcss": "4.1.8"
   },
   "devDependencies": {
     "@eslint/eslintrc": "3.3.1",

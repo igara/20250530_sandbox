@@ -45,6 +45,8 @@ jobs:
 
           git checkout ${{ github.event.inputs.BEFORE_REF }}
           npm ci
+          npx playwright install --with-deps
+
           npm run snapshot:before
 
           git checkout  ${{ github.event.inputs.AFTER_REF }}

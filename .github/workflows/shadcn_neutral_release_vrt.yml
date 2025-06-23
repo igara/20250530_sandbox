@@ -35,16 +35,14 @@ jobs:
         with:
           node-version-file: './packages/shadcn_neutral/package.json'
           cache: 'npm'
-      - name: Install Playwright Browsers
-        run: |
-          npx playwright install --with-deps
-          npm install -g playwright
       - name: VRT
         run: |
           sudo apt install fonts-noto git zip
 
           git checkout ${{ github.event.inputs.BEFORE_REF }}
           npm ci
+          npx playwright install --with-deps
+
           npm run snapshot:before
 
           git checkout  ${{ github.event.inputs.AFTER_REF }}

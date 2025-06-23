@@ -1,7 +1,7 @@
 {
   "name": "shadcn_neutral",
   "private": true,
-  "version": "20250530.0.1",
+  "version": "20250623.0.1",
   "type": "module",
   "engines": {
     "node": "22.14.0",

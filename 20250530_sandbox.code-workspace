@@ -1,5 +1,8 @@
 {
   "folders": [
+      {
+      "path": "packages/shadcn_green"
+    },
     {
       "path": "packages/shadcn_neutral"
     },
